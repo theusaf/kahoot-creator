@@ -1,0 +1,29 @@
+{
+  "name": "kahoot-creator",
+  "version": "1.0.0",
+  "description": "create kahoot quizzes using javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theusaf/kahoot-creator.git"
+  },
+  "keywords": [
+    "kahoot",
+    "quiz",
+    "create",
+    "custom"
+  ],
+  "author": "theusaf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theusaf/kahoot-creator/issues"
+  },
+  "homepage": "https://github.com/theusaf/kahoot-creator#readme",
+  "dependencies": {
+    "request": "^2.88.0",
+    "user-agents": "^1.0.501"
+  }
+}
