@@ -65,8 +65,8 @@ const base = {
 };
 
 class Creator{
-  constructor(){
-    this.userAgent = new userAgent().toString();
+  constructor(useragent){
+    this.userAgent = useragent ? useragent : new userAgent().toString();
     this.user = null;
     this.kahoot = base;
   }
@@ -93,6 +93,10 @@ class Creator{
             rej(resp);
           }else{
             me.user = resp;
+            request = request.defaults(jar:jar,headers:{
+              "User-Agent": me.userAgent,
+              "authorization": me.user.access_token
+            });
             res(resp);
           }
         }catch(er){
@@ -101,11 +105,28 @@ class Creator{
       });
     });
   }
-  load(){
-    // GET https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12
-    // GET https://create.kahoot.it/rest/folders/2329c3ff-c1a0-4e74-bc2c-c65b6427f9e1/
+  load(id){
+    const me = this;
+    return new Promise((res,rej)=>{
+      // GET https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12
+      // GET https://create.kahoot.it/rest/folders/2329c3ff-c1a0-4e74-bc2c-c65b6427f9e1/
+      request.get(`https://create.kahoot.it/rest/kahoots/${id}`,(e,r,b)=>{
+        if(e){
+          rej(e);
+        }
+        try{
+          const k = JSON.parse(b);
+          if(k.error){
+            return rej(k);
+          }
+          Object.assign(me.kahoot,k);
+        }catch(e){
+          rej(e);
+        }
+      });
+    });
   }
-  create(){
+  create(name){
     // POST https://create.kahoot.it/rest/drafts
   }
   update(){
@@ -116,4 +137,10 @@ class Creator{
     // DELETE https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12/lock
     // POST https://create.kahoot.it/rest/events/user
   }
+  get questions(){
+    const me = this;
+    return me.kahoot.questions;
+  }
 }
+
+module.exports = Creator;
