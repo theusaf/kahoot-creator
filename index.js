@@ -1,67 +1,69 @@
 const request = require('request');
 const userAgent = require('user-agents');
 const jar = request.jar();
-request = request.defaults(jar:jar);
+request = request.defaults({jar:jar});
 
 const base = {
   id: null,
   kahootExists: false,
-  cover: "",
-  coverMetadata: null,
-  created: null,
-  creator_username: "",
-  description: "",
-  folderId: "",
-  introVideo: "",
-  language: "English",
-  lobby_video: {
-    youtube: {
-      id: "",
-      fullUrl: "",
-      startTime: 0
-    }
-  },
-  metadata: {
-    resolution: "",
-    duplicationProtection: false,
-    moderation: {
-      flaggedTimestamp: 0,
-      timestampResolution: 0
-    },
-    resolution: ""
-  },
-  organisation: null,
-  questions: [
-    {
-      question: "",
-      type: "quiz",
-      layout: "CLASSIC",
-      image: null,
-      imageMetadata: null,
-      choices: [],
-      numberOfAnswers: 0,
-      pointsMultiplier: 1,
-      question: "",
-      questionFormat: 0,
-      resources: "",
-      time: 20000,
-      type: "quiz",
-      video: {
-        id: null,
-        endTime: 0,
-        startTime: 0,
-        service: null,
-        fullUrl: ""
+  kahoot: {
+    cover: "",
+    coverMetadata: null,
+    created: null,
+    creator_username: "",
+    description: "",
+    folderId: "",
+    introVideo: "",
+    language: "English",
+    lobby_video: {
+      youtube: {
+        id: "",
+        fullUrl: "",
+        startTime: 0
       }
-    }
-  ],
-  quizType: "quiz",
-  resources: "",
-  themeId: null,
-  title: "",
-  type: "quiz",
-  uuid: null,
-  visibility: 0
+    },
+    metadata: {
+      resolution: "",
+      duplicationProtection: false,
+      moderation: {
+        flaggedTimestamp: 0,
+        timestampResolution: 0
+      },
+      resolution: ""
+    },
+    organisation: null,
+    questions: [
+      {
+        question: "",
+        type: "quiz",
+        layout: "CLASSIC",
+        image: null,
+        imageMetadata: null,
+        choices: [],
+        numberOfAnswers: 0,
+        pointsMultiplier: 1,
+        question: "",
+        questionFormat: 0,
+        resources: "",
+        time: 20000,
+        type: "quiz",
+        video: {
+          id: null,
+          endTime: 0,
+          startTime: 0,
+          service: null,
+          fullUrl: ""
+        }
+      }
+    ],
+    quizType: "quiz",
+    resources: "",
+    themeId: null,
+    title: "",
+    type: "quiz",
+    uuid: null,
+    visibility: 0
+  }
 };
 
 class Creator{
@@ -93,9 +95,12 @@ class Creator{
             rej(resp);
           }else{
             me.user = resp;
-            request = request.defaults(jar:jar,headers:{
-              "User-Agent": me.userAgent,
-              "authorization": me.user.access_token
+            request = request.defaults({
+              jar:jar,
+              headers:{
+                "User-Agent": me.userAgent,
+                "authorization": me.user.access_token
+              }
             });
             res(resp);
           }
@@ -119,7 +124,7 @@ class Creator{
           if(k.error){
             return rej(k);
           }
-          Object.assign(me.kahoot,k);
+          Object.assign(me.kahoot.kahoot,k);
         }catch(e){
           rej(e);
         }
@@ -127,19 +132,31 @@ class Creator{
     });
   }
   create(name){
+    const me = this;
     // POST https://create.kahoot.it/rest/drafts
+    return new Promise((okay,yeet)=>{
+      if(!user){
+        return yeet({error:"not logged in!"});
+      }
+    });
   }
   update(){
+    const me = this;
     // PUT https://create.kahoot.it/rest/drafts/08bf2c68-858e-440c-a35d-43cd580f0c12
   }
   publish(){
+    const me = this;
     // POST https://create.kahoot.it/rest/drafts/08bf2c68-858e-440c-a35d-43cd580f0c12/publish
     // DELETE https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12/lock
     // POST https://create.kahoot.it/rest/events/user
   }
+  get id(){
+    const me = this;
+    return me.kahoot.kahoot.uuid;
+  }
   get questions(){
     const me = this;
-    return me.kahoot.questions;
+    return me.kahoot.kahoot.questions;
   }
 }
 
