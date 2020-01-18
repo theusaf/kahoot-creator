@@ -311,6 +311,7 @@ class Creator{
     }
     quest.choices = cs;
     quest.description = content;
+    quest.numberOfAnswers = choices ? choices.length : undefined;
     const ind = me.kahoot.kahoot.questions.push(quest) - 1;
     return me.kahoot.kahoot.questions[ind];
   }
@@ -324,6 +325,7 @@ class Creator{
           for(let i = 0;i<4-question.choices.length;++i){
             question.choices.push({answer:"",correct:true});
           }
+          question.numberOfAnswers = 4;
           return question;
         }
         break;
@@ -333,6 +335,7 @@ class Creator{
         break;
       case "open_ended":
         question.choices.push({answer:choice,correct:correct});
+        question.numberOfAnswers = question.choices.length;
         return question;
         break;
       default:
@@ -340,6 +343,7 @@ class Creator{
           return question;
         }
         question.choices.push({answer:choice,correct:correct});
+        question.numberOfAnswers = question.choices.length;
         return question;
     }
   };
