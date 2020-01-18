@@ -66,12 +66,31 @@ const base = {
   }
 };
 
+// modified from:
+// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+function shuffle(array) {
+  var tempArray = Array.from(array);
+  var currentIndex = array.length, temporaryValue, randomIndex;
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+    // And swap it with the current element.
+    temporaryValue = tempArray[currentIndex];
+    tempArray[currentIndex] = tempArray[randomIndex];
+    tempArray[randomIndex] = temporaryValue;
+  }
+  return tempArray;
+}
+
 class Creator{
   constructor(useragent){
     this.userAgent = useragent ? useragent : new userAgent().toString();
     this.user = null;
-    this.kahoot = base;
+    this.kahoot = Object.assign({},base);
   }
+  // HTTP methods
   login(username,password){
     const me = this;
     return new Promise((forty,two)=>{
@@ -119,15 +138,14 @@ class Creator{
         }
         try{
           const j = JSON.parse(b);
-          if(j.error){
-            return juliet(j);
+          if(!j.error){
+            delete j.targetFolderId;
+            delete j.type;
+            delete j.created;
+            delete j.modified;
+            Object.assign(me.kahoot,j);
+            return romeo(j);
           }
-          delete j.targetFolderId;
-          delete j.type;
-          delete j.created;
-          delete j.modified;
-          Object.assign(me.kahoot,j);
-          return romeo(j);
         }catch(e){
           return juliet(e);
         }
@@ -226,6 +244,7 @@ class Creator{
             }catch(err){
               return jessie(err);
             }
+            me.kahoot.id = null;
             return james(data);
           });
         }catch(err){
@@ -234,6 +253,7 @@ class Creator{
       });
     });
   }
+  // Getters and setters for easier access
   get id(){
     const me = this;
     return me.kahoot.kahoot.uuid;
@@ -242,6 +262,87 @@ class Creator{
     const me = this;
     return me.kahoot.kahoot.questions;
   }
+  get title(){
+    const me = this;
+    return me.kahoot.kahoot.title;
+  }
+  set title(title){
+    const me = this;
+    let slug = title.replace(/[^0-9a-z\ ]/gmi,"");
+    slug = slug.replace(/\ */gm,"-");
+    me.kahoot.kahoot.title = title;
+    me.kahoot.kahoot.slug = slug;
+    return title;
+  }
+  // Adding questions and modifying stuff
+  removeQuestion(index){
+    const me = this;
+    me.kahoot.kahoot.questions.splice(index,1);
+    return me;
+  }
+  shuffleQuestions(){
+    const me = this;
+    me.kahoot.kahoot.questions = shuffle(me.kahoot.kahoot.questions);
+    return me;
+  }
+  addQuestion(question,type,choices){
+    const me = this;
+    let cs = [];
+    const quest = Object.assign({},base.kahoot.questions[0]);
+    quest.type = type;
+    quest.question = question;
+    let content = undefined;
+    switch (type) {
+      case "word_cloud":
+        cs = undefined;
+        break;
+      case "content":
+        cs = undefined;
+        content = "";
+        break;
+      case "jumble":
+        cs = [{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true}];
+        break;
+      case "open_ended":
+        cs = [{answer:"",correct:true}]
+        break;
+      default:
+        cs = [{answer:"",correct:false},{answer:"",correct:false}];
+    }
+    quest.choices = cs;
+    quest.description = content;
+    const ind = me.kahoot.kahoot.questions.push(quest) - 1;
+    return me.kahoot.kahoot.questions[ind];
+  }
+  addChoice(question,choice,correct){
+    switch (question.type) {
+      case "jumble":
+        if(question.choices.length >= 4){
+          return question;
+        }else if(question.choices.length < 4){
+          question.choices.push({answer:choice,correct:true});
+          for(let i = 0;i<4-question.choices.length;++i){
+            question.choices.push({answer:"",correct:true});
+          }
+          return question;
+        }
+        break;
+      case "content":
+      case "word_cloud":
+        return question;
+        break;
+      case "open_ended":
+        question.choices.push({answer:choice,correct:correct});
+        return question;
+        break;
+      default:
+        if(question.choices.length >= 4){
+          return question;
+        }
+        question.choices.push({answer:choice,correct:correct});
+        return question;
+    }
+  };
 }
 
 module.exports = Creator;
