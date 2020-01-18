@@ -49,6 +49,12 @@ creator.login("username","password").then(()=>{
   - `choice`: The choice being added
   - `correct`: Whether the choice is correct
   - returns: `question` (the question that the choice was added to)
+- setQuizImage(buffer)
+  - Sets the cover image of the kahoot.
+  - `buffer`: An image buffer or url to use.
+- upload(buffer)
+  - `buffer`: An image buffer to upload to kahoot.
+  - Returns a `Promise` with a JSON object containing information about the image.
 
 ### Properties
 - `id`: The uuid of the current kahoot quiz
@@ -57,3 +63,5 @@ creator.login("username","password").then(()=>{
 - `quiz`: The kahoot
 - `title`: The title of the kahoot
   - **It is recommended to use this property to set the name of the quiz. (It automatically sets the 'slug' of the kahoot for you)**
+### Information
+- Most methods return a `Promise` (unless specified otherwise)

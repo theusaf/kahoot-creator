@@ -1,6 +1,6 @@
 {
   "name": "kahoot-creator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "create kahoot quizzes using javascript",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,6 @@
   "homepage": "https://github.com/theusaf/kahoot-creator#readme",
   "dependencies": {
     "request": "^2.88.0",
-    "user-agents": "^1.0.501"
+    "user-agents": "^1.0.505"
   }
 }

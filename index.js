@@ -1,8 +1,4 @@
-var request = require('request');
 const userAgent = require('user-agents');
-const jar = request.jar();
-request = request.defaults({jar:jar});
-
 const base = {
   id: null,
   kahootExists: false,
@@ -86,15 +82,19 @@ function shuffle(array) {
 
 class Creator{
   constructor(useragent){
+    var request = require('me.request');
+    const jar = request.jar();
+    request = request.defaults({jar:jar});
     this.userAgent = useragent ? useragent : new userAgent().toString();
     this.user = null;
     this.kahoot = Object.assign({},base);
+    this.request = request;
   }
   // HTTP methods
   login(username,password){
     const me = this;
     return new Promise((forty,two)=>{
-      request.post({
+      me.me.request.post({
         url: "https://create.kahoot.it/rest/authenticate",
         headers: {
           "User-Agent": me.userAgent,
@@ -116,7 +116,7 @@ class Creator{
             two(resp);
           }else{
             me.user = resp;
-            request = request.defaults({
+            me.request = me.request.defaults({
               jar:jar,
               headers:{
                 "User-Agent": me.userAgent,
@@ -134,7 +134,7 @@ class Creator{
   load(id){
     const me = this;
     return new Promise((romeo,juliet)=>{
-      request.get(`https://create.kahoot.it/rest/drafts/${id}`,{json:true},(e,r,b)=>{
+      me.request.get(`https://create.kahoot.it/rest/drafts/${id}`,{json:true},(e,r,b)=>{
         if(e){
           return juliet(e);
         }
@@ -151,7 +151,7 @@ class Creator{
         }catch(e){
           return juliet(e);
         }
-        request.get(`https://create.kahoot.it/rest/kahoots/${id}`,{json:true},(e,r,b)=>{
+        me.request.get(`https://create.kahoot.it/rest/kahoots/${id}`,{json:true},(e,r,b)=>{
           if(e){
             juliet(e);
           }
@@ -177,7 +177,7 @@ class Creator{
         return yeet({error:"not logged in!"});
       }
       me.title = name ? name : "lorem ipsum";
-      request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
+      me.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
         if(e){
           yeet(e);
         }
@@ -200,7 +200,7 @@ class Creator{
       if(!me.user){
         stick({error:"Not logged in!"});
       }
-      request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
+      me.request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
           stick(e);
         }
@@ -225,7 +225,7 @@ class Creator{
         return jessie({error:"Not logged in!"});
       }
       // publish
-      request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`,{body:me.kahoot,json:true},(e,r,b)=>{
+      me.request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
           return jessie(e);
         }
@@ -236,7 +236,7 @@ class Creator{
           }
           Object.assign(me.kahoot.kahoot,data);
           // delete lock file
-          request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,{json:true},(e,r,b)=>{
+          me.request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,{json:true},(e,r,b)=>{
             if(e){
               return jessie(e);
             }
@@ -307,13 +307,22 @@ class Creator{
         content = choices.toString();
         break;
       case "jumble":
+        if(choices){
+          if(choices.length < 4){
+            for(let i = 0;i<4-choices.length;++i){
+              choices.push({answer:"",correct:true});
+            }
+          }
+          cs = choices.slice(0,4);
+          break;
+        }
         cs = [{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true}];
         break;
       case "open_ended":
-        cs = [{answer:"",correct:true}]
+        cs = choices ? choices : [{answer:"",correct:true}]
         break;
       default:
-        cs = [{answer:"",correct:false},{answer:"",correct:false}];
+        cs = choices ? choices.slice(0,4) : [{answer:"",correct:false},{answer:"",correct:false}];
     }
     quest.choices = cs;
     quest.description = content;
@@ -353,6 +362,80 @@ class Creator{
         return question;
     }
   };
+  // metadata stuff
+  setLobbyVideo(id,start,end){
+    const me = this;
+    Object.assign(me.quiz.lobby_video.youtube,{
+      id: id,
+      startTime: start,
+      endTime: end,
+      service: "youtube",
+      fullUrl: `https://www.youtube.com/watch?v=${id}`
+    });
+    return me;
+  }
+  upload(img){
+    const me = this;
+    return new Promise((res,ponse)=>{
+      const form = {
+        my_buffer: img
+      };
+      me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
+        formData: form
+      },(e,r,b)=>{
+        if(e){
+          return ponse(b,e);
+        }
+        try{
+          const urrect = JSON.parse(b);
+          if(urrect.error){
+            return ponse(b);
+          }
+          res(urrect);
+        }catch(e){
+          ponse(b,e);
+        }
+      });
+    });
+  }
+  setQuizImage(buf){
+    const me = this;
+    return new Promise((asuna,kirito)=>{
+      if(typeof buf == "string"){
+        me.request.get(buf,(e,r,b)=>{
+          if(e){
+            return kirito(b,e);
+          }
+          me.upload(b).then(info=>{
+            me.quiz.cover = `https://media.kahoot.it/${info.id}`;
+            Object.assign(me.quiz.coverMetadata,{
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            });
+            asuna(me);
+          }).catch(err=>{
+            kirito(err);
+          });
+        });
+      }else{
+        me.upload(Buffer.from(buf)).then(info=>{
+          me.quiz.cover = `https://media.kahoot.it/${info.id}`;
+          Object.assign(me.quiz.coverMetadata,{
+            id: info.id,
+            contentType: info.contentType,
+            width: info.width,
+            height: info.height
+          });
+          asuna(me);
+        }).catch(err=>{
+          kirito(err);
+        });
+      }
+      return me;
+    });
+  }
 }
 
 module.exports = Creator;
