@@ -49,6 +49,18 @@ creator.login("username","password").then(()=>{
   - `choice`: The choice being added
   - `correct`: Whether the choice is correct
   - returns: `question` (the question that the choice was added to)
+- setLobbyVideo(id,start,end)
+  - `id`: The id of the YouTube video
+  - `start`: The start time in seconds
+  - `end`: The end time in seconds
+- setQuestionImage(question,buffer)
+  - Sets the cover image of the kahoot.
+  - `buffer`: An image buffer or url to use.
+  - returns `question` (The question provided)
+- setQuestionVideo(question,id,start,end)
+  - `id`: The id of the YouTube video
+  - `start`: The start time in seconds
+  - `end`: The end time in seconds
 - setQuizImage(buffer)
   - Sets the cover image of the kahoot.
   - `buffer`: An image buffer or url to use.

@@ -381,7 +381,8 @@ class Creator{
         my_buffer: img
       };
       me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
-        formData: form
+        formData: form,
+        encoding: null
       },(e,r,b)=>{
         if(e){
           return ponse(b,e);
@@ -431,6 +432,54 @@ class Creator{
           asuna(me);
         }).catch(err=>{
           kirito(err);
+        });
+      }
+    });
+  }
+  setQuestionVideo(question,id,start,end){
+    const me = this;
+    Object.assign(question.video,{
+      id: id,
+      startTime: start,
+      endTime: end,
+      service: "youtube",
+      fullUrl: `https://www.youtube.com/watch?v=${id}`
+    });
+    return question;
+  }
+  setQuestionImage(question,buf){
+    const me = this;
+    return new Promise((misty,ash)=>{
+      if(typeof buf == "string"){
+        me.request.get(buf,{encoding:null},(e,r,b)=>{
+          if(e){
+            return ash(b,e);
+          }
+          me.upload(b).then(info=>{
+            question.cover = `https://media.kahoot.it/${info.id}`;
+            question.imageMetadata = {
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            };
+            misty(question);
+          }).catch(err=>{
+            ash(err);
+          });
+        });
+      }else{
+        me.upload(Buffer.from(buf)).then(info=>{
+          question.cover = `https://media.kahoot.it/${info.id}`;
+          question.imageMetadata = {
+            id: info.id,
+            contentType: info.contentType,
+            width: info.width,
+            height: info.height
+          };
+          misty(me);
+        }).catch(err=>{
+          ash(err);
         });
       }
       return me;
