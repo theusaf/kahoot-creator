@@ -74,7 +74,7 @@ class Creator{
   }
   login(username,password){
     const me = this;
-    return new Promise((res,rej)=>{
+    return new Promise((forty,two)=>{
       request.post({
         url: "https://create.kahoot.it/rest/authenticate",
         headers: {
@@ -87,12 +87,12 @@ class Creator{
         username: username
       },(e,r,b)=>{
         if(e){
-          rej(e);
+          two(e);
         }
         try{
           const resp = JSON.parse(b);
           if(resp.error){
-            rej(resp);
+            two(resp);
           }else{
             me.user = resp;
             request = request.defaults({
@@ -102,53 +102,137 @@ class Creator{
                 "authorization": me.user.access_token
               }
             });
-            res(resp);
+            forty(resp);
           }
         }catch(er){
-          rej(er);
+          two(er);
         }
       });
     });
   }
   load(id){
     const me = this;
-    return new Promise((res,rej)=>{
-      // GET https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12
-      // GET https://create.kahoot.it/rest/folders/2329c3ff-c1a0-4e74-bc2c-c65b6427f9e1/
-      request.get(`https://create.kahoot.it/rest/kahoots/${id}`,(e,r,b)=>{
+    return new Promise((romeo,juliet)=>{
+      request.get(`https://create.kahoot.it/rest/drafts/${id}`,(e,r,b)=>{
         if(e){
-          rej(e);
+          return juliet(e);
         }
         try{
-          const k = JSON.parse(b);
-          if(k.error){
-            return rej(k);
+          const j = JSON.parse(b);
+          if(j.error){
+            return juliet(j);
           }
-          Object.assign(me.kahoot.kahoot,k);
+          delete j.targetFolderId;
+          delete j.type;
+          delete j.created;
+          delete j.modified;
+          Object.assign(me.kahoot,j);
+          return romeo(j);
         }catch(e){
-          rej(e);
+          return juliet(e);
         }
+        request.get(`https://create.kahoot.it/rest/kahoots/${id}`,(e,r,b)=>{
+          if(e){
+            juliet(e);
+          }
+          try{
+            const k = JSON.parse(b);
+            if(k.error){
+              return juliet(k);
+            }
+            Object.assign(me.kahoot.kahoot,k);
+            me.kahoot.kahootExists = true;
+            romeo(k);
+          }catch(e){
+            juliet(e);
+          }
+        });
       });
     });
   }
   create(name){
     const me = this;
-    // POST https://create.kahoot.it/rest/drafts
-    return new Promise((okay,yeet)=>{
-      if(!user){
+    return new Promise((toss,yeet)=>{
+      if(!me.user){
         return yeet({error:"not logged in!"});
       }
+      request.post("https://create.kahoot.it/rest/drafts").form(this.kahoot,(e,r,b)=>{
+        if(e){
+          yeet(e);
+        }
+        try{
+          const data = JSON.parse(b);
+          if(data.error){
+            return yeet(data);
+          }
+          Object.assign(me.kahoot,data);
+          toss(data);
+        }catch(err){
+          yeet(e);
+        }
+      });
     });
   }
   update(){
     const me = this;
-    // PUT https://create.kahoot.it/rest/drafts/08bf2c68-858e-440c-a35d-43cd580f0c12
+    return new Promise((my,stick)=>{
+      if(!me.user){
+        stick({error:"Not logged in!"});
+      }
+      request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`).form(me.kahoot,(e,r,b)=>{
+        if(e){
+          stick(e);
+        }
+        try{
+          const resp = JSON.parse(b);
+          delete resp.targetFolderId;
+          delete resp.type;
+          delete resp.created;
+          delete resp.modified;
+          Objcet.assign(me.kahoot,resp);
+          my(resp);
+        }catch(e){
+          stick(e);
+        }
+      });
+    });
   }
   publish(){
     const me = this;
-    // POST https://create.kahoot.it/rest/drafts/08bf2c68-858e-440c-a35d-43cd580f0c12/publish
-    // DELETE https://create.kahoot.it/rest/kahoots/08bf2c68-858e-440c-a35d-43cd580f0c12/lock
-    // POST https://create.kahoot.it/rest/events/user
+    return new Promise((james,jessie)=>{
+      if(!me.user){
+        return jessie({error:"Not logged in!"});
+      }
+      // publish
+      request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`).form(me.kahoot,(e,r,b)=>{
+        if(e){
+          return jessie(e);
+        }
+        try{
+          const data = JSON.parse(b);
+          if(data.error){
+            return jessie(e);
+          }
+          Object.assign(me.kahoot.kahoot,data);
+          // delete lock file
+          request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,(e,r,b)=>{
+            if(e){
+              return jessie(e);
+            }
+            try{
+              if(JSON.parse(b).error){
+                return jessie(JSON.parse(b).error);
+              }
+            }catch(err){
+              return jessie(err);
+            }
+            return james(data);
+          });
+        }catch(err){
+          return jessie(err);
+        }
+      });
+    });
   }
   get id(){
     const me = this;
