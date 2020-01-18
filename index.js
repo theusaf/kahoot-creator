@@ -174,7 +174,8 @@ class Creator{
       if(!me.user){
         return yeet({error:"not logged in!"});
       }
-      request.post("https://create.kahoot.it/rest/drafts").form(this.kahoot,(e,r,b)=>{
+      me.title = name ? name : "lorem ipsum";
+      request.post("https://create.kahoot.it/rest/drafts").form(me.kahoot,(e,r,b)=>{
         if(e){
           yeet(e);
         }
@@ -274,6 +275,9 @@ class Creator{
     me.kahoot.kahoot.slug = slug;
     return title;
   }
+  get quiz(){
+    return this.kahoot.kahoot;
+  }
   // Adding questions and modifying stuff
   removeQuestion(index){
     const me = this;
@@ -289,7 +293,7 @@ class Creator{
     const me = this;
     let cs = [];
     const quest = Object.assign({},base.kahoot.questions[0]);
-    quest.type = type;
+    quest.type = type ? type : "quiz";
     quest.question = question;
     let content = undefined;
     switch (type) {
@@ -298,7 +302,7 @@ class Creator{
         break;
       case "content":
         cs = undefined;
-        content = "";
+        content = choices.toString();
         break;
       case "jumble":
         cs = [{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true},{answer:"",correct:true}];
