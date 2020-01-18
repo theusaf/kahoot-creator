@@ -1,4 +1,4 @@
-const request = require('request');
+var request = require('request');
 const userAgent = require('user-agents');
 const jar = request.jar();
 request = request.defaults({jar:jar});
@@ -99,17 +99,19 @@ class Creator{
         headers: {
           "User-Agent": me.userAgent,
           "x-kahoot-login-gate": "enabled"
+        },
+        json: true,
+        body: {
+          grant_type: "password",
+          password: password,
+          username: username
         }
-      }).form({
-        grant_type: "password",
-        password: password,
-        username: username
       },(e,r,b)=>{
         if(e){
           two(e);
         }
         try{
-          const resp = JSON.parse(b);
+          const resp = b;
           if(resp.error){
             two(resp);
           }else{
@@ -124,7 +126,7 @@ class Creator{
             forty(resp);
           }
         }catch(er){
-          two(er);
+          two(b,e);
         }
       });
     });
@@ -132,12 +134,12 @@ class Creator{
   load(id){
     const me = this;
     return new Promise((romeo,juliet)=>{
-      request.get(`https://create.kahoot.it/rest/drafts/${id}`,(e,r,b)=>{
+      request.get(`https://create.kahoot.it/rest/drafts/${id}`,{json:true},(e,r,b)=>{
         if(e){
           return juliet(e);
         }
         try{
-          const j = JSON.parse(b);
+          const j = b;
           if(!j.error){
             delete j.targetFolderId;
             delete j.type;
@@ -149,7 +151,7 @@ class Creator{
         }catch(e){
           return juliet(e);
         }
-        request.get(`https://create.kahoot.it/rest/kahoots/${id}`,(e,r,b)=>{
+        request.get(`https://create.kahoot.it/rest/kahoots/${id}`,{json:true},(e,r,b)=>{
           if(e){
             juliet(e);
           }
@@ -162,7 +164,7 @@ class Creator{
             me.kahoot.kahootExists = true;
             romeo(k);
           }catch(e){
-            juliet(e);
+            juliet(b,e);
           }
         });
       });
@@ -175,19 +177,19 @@ class Creator{
         return yeet({error:"not logged in!"});
       }
       me.title = name ? name : "lorem ipsum";
-      request.post("https://create.kahoot.it/rest/drafts").form(me.kahoot,(e,r,b)=>{
+      request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
         if(e){
           yeet(e);
         }
         try{
-          const data = JSON.parse(b);
+          const data = b;
           if(data.error){
             return yeet(data);
           }
           Object.assign(me.kahoot,data);
           toss(data);
         }catch(err){
-          yeet(e);
+          yeet(b,e);
         }
       });
     });
@@ -198,12 +200,12 @@ class Creator{
       if(!me.user){
         stick({error:"Not logged in!"});
       }
-      request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`).form(me.kahoot,(e,r,b)=>{
+      request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
           stick(e);
         }
         try{
-          const resp = JSON.parse(b);
+          const resp = b;
           delete resp.targetFolderId;
           delete resp.type;
           delete resp.created;
@@ -211,7 +213,7 @@ class Creator{
           Objcet.assign(me.kahoot,resp);
           my(resp);
         }catch(e){
-          stick(e);
+          stick(b,e);
         }
       });
     });
@@ -223,33 +225,33 @@ class Creator{
         return jessie({error:"Not logged in!"});
       }
       // publish
-      request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`).form(me.kahoot,(e,r,b)=>{
+      request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
           return jessie(e);
         }
         try{
-          const data = JSON.parse(b);
+          const data = b;
           if(data.error){
             return jessie(e);
           }
           Object.assign(me.kahoot.kahoot,data);
           // delete lock file
-          request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,(e,r,b)=>{
+          request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,{json:true},(e,r,b)=>{
             if(e){
               return jessie(e);
             }
             try{
-              if(JSON.parse(b).error){
+              if(b.error){
                 return jessie(JSON.parse(b).error);
               }
             }catch(err){
-              return jessie(err);
+              return jessie(b,err);
             }
             me.kahoot.id = null;
             return james(data);
           });
         }catch(err){
-          return jessie(err);
+          return jessie(b,err);
         }
       });
     });

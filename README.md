@@ -7,9 +7,9 @@ const KahootCreator = require("kahoot-creator");
 const creator = new KahootCreator();
 
 creator.login("username","password").then(()=>{
-  creator.create("my first quiz!").then(kahoot)=>{
+  creator.create("my first quiz!").then((kahoot)=>{
     // handling stuff, adding questions, publishing, etc
-  };
+  });
 });
 ```
 ### Methods
@@ -53,6 +53,7 @@ creator.login("username","password").then(()=>{
 ### Properties
 - `id`: The uuid of the current kahoot quiz
 - `questions`: The questions of the kahoot
+  - When the class is created, it will automatically have an empty `quiz` question.
 - `quiz`: The kahoot
 - `title`: The title of the kahoot
   - **It is recommended to use this property to set the name of the quiz. (It automatically sets the 'slug' of the kahoot for you)**
