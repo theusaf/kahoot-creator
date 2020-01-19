@@ -92,6 +92,7 @@ class Creator{
     this.user = null;
     this.kahoot = Object.assign({},base);
     this.request = request;
+    this.needsToCreateDraft = false;
   }
   // HTTP methods
   login(username,password){
@@ -149,6 +150,7 @@ class Creator{
             delete j.created;
             delete j.modified;
             Object.assign(me.kahoot,j);
+            me.needsToCreateDraft = false;
             return romeo(j);
           }
         }catch(e){
@@ -164,6 +166,7 @@ class Creator{
               return juliet(k);
             }
             Object.assign(me.kahoot.kahoot,k);
+            me.needsToCreateDraft = true;
             me.kahoot.kahootExists = true;
             romeo(k);
           }catch(e){
@@ -203,6 +206,25 @@ class Creator{
       if(!me.user){
         stick({error:"Not logged in!"});
       }
+      if(me.needsToCreateDraft){
+        me.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
+          if(e){
+            stick(e);
+          }
+          try{
+            const data = b;
+            if(data.error){
+              return stick(data);
+            }
+            Object.assign(me.kahoot,data);
+            me.needsToCreateDraft = false;
+            my(data);
+          }catch(err){
+            stick(b,e);
+          }
+        });
+        return;
+      }
       me.request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
           console.log(e);
@@ -238,11 +260,11 @@ class Creator{
         try{
           const data = b;
           if(data.error){
-            return jessie(e);
+            return jessie(data);
           }
           Object.assign(me.kahoot.kahoot,data);
           // delete lock file
-          me.request.delete(`https://create.kahoot.it/rest/drafts/${me.kahoot.it}/lock`,{json:true},(e,r,b)=>{
+          me.request.delete(`https://create.kahoot.it/rest/kahoots/${me.kahoot.id}/lock`,{json:true},(e,r,b)=>{
             if(e){
               return jessie(e);
             }
