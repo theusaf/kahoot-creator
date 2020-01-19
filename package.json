@@ -1,6 +1,6 @@
 {
   "name": "kahoot-creator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "create kahoot quizzes using javascript",
   "main": "index.js",
   "scripts": {

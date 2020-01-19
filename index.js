@@ -159,7 +159,7 @@ class Creator{
             juliet(e);
           }
           try{
-            const k = JSON.parse(b);
+            const k = b;
             if(k.error){
               return juliet(k);
             }
@@ -248,7 +248,7 @@ class Creator{
             }
             try{
               if(b.error){
-                return jessie(JSON.parse(b).error);
+                return jessie(b);
               }
             }catch(err){
               return jessie(b,err);
