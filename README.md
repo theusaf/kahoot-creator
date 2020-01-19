@@ -57,9 +57,6 @@ creator.login("username","password").then(()=>{
   - `id`: The id of the YouTube video
   - `start`: The start time in seconds
   - `end`: The end time in seconds
-- upload(buffer)
-  - `buffer`: An image buffer to upload to kahoot.
-  - Returns a `Promise` with a JSON object containing information about the image.
 
 ### Properties
 - `id`: The uuid of the current kahoot quiz
