@@ -82,9 +82,9 @@ function shuffle(array) {
 
 class Creator{
   constructor(useragent){
-    var request = require('me.request');
-    const jar = request.jar();
-    request = request.defaults({jar:jar});
+    var request = require('request');
+    this.jar = request.jar();
+    request = request.defaults({jar:this.jar});
     this.userAgent = useragent ? useragent : new userAgent().toString();
     this.user = null;
     this.kahoot = Object.assign({},base);
@@ -94,7 +94,7 @@ class Creator{
   login(username,password){
     const me = this;
     return new Promise((forty,two)=>{
-      me.me.request.post({
+      me.request.post({
         url: "https://create.kahoot.it/rest/authenticate",
         headers: {
           "User-Agent": me.userAgent,
@@ -117,10 +117,10 @@ class Creator{
           }else{
             me.user = resp;
             me.request = me.request.defaults({
-              jar:jar,
+              jar:me.jar,
               headers:{
                 "User-Agent": me.userAgent,
-                "authorization": me.user.access_token
+                "authorization": "Bearer " + me.user.access_token
               }
             });
             forty(resp);
@@ -202,6 +202,7 @@ class Creator{
       }
       me.request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
         if(e){
+          console.log(e);
           stick(e);
         }
         try{
@@ -210,9 +211,11 @@ class Creator{
           delete resp.type;
           delete resp.created;
           delete resp.modified;
-          Objcet.assign(me.kahoot,resp);
+          Object.assign(me.kahoot,resp);
           my(resp);
         }catch(e){
+          console.log(b);
+          console.log(e);
           stick(b,e);
         }
       });
@@ -304,6 +307,8 @@ class Creator{
         break;
       case "content":
         cs = undefined;
+        quest.question = undefined;
+        quest.title = question;
         content = choices.toString();
         break;
       case "jumble":
@@ -375,15 +380,14 @@ class Creator{
     return me;
   }
   upload(img){
+    console.log(img);
     const me = this;
     return new Promise((res,ponse)=>{
-      const form = {
-        my_buffer: img
-      };
-      me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
-        formData: form,
+      let r = me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
         encoding: null
       },(e,r,b)=>{
+        b = b.toString();
+        console.log(b);
         if(e){
           return ponse(b,e);
         }
@@ -397,17 +401,20 @@ class Creator{
           ponse(b,e);
         }
       });
+      let f = r.form();
+      f.append("my_buffer",Buffer.from(img));
     });
   }
   setQuizImage(buf){
     const me = this;
     return new Promise((asuna,kirito)=>{
       if(typeof buf == "string"){
-        me.request.get(buf,(e,r,b)=>{
+        me.request.get(buf,{encoding: null},(e,r,b)=>{
           if(e){
             return kirito(b,e);
           }
           me.upload(b).then(info=>{
+            console.log(info);
             me.quiz.cover = `https://media.kahoot.it/${info.id}`;
             Object.assign(me.quiz.coverMetadata,{
               id: info.id,
