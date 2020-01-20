@@ -63,7 +63,6 @@ const base = {
 };
 const https = require('https');
 const filetype = require('file-type');
-const formData = require('form-data');
 
 // modified from:
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -90,7 +89,7 @@ class Creator{
     request = request.defaults({jar:this.jar});
     this.userAgent = useragent ? useragent : new userAgent().toString();
     this.user = null;
-    this.kahoot = Object.assign({},base);
+    this.kahoot = JSON.parse(JSON.stringify(base));
     this.request = request;
     this.needsToCreateDraft = false;
   }
@@ -322,7 +321,7 @@ class Creator{
   addQuestion(question,type,choices){
     const me = this;
     let cs = [];
-    const quest = Object.assign({},base.kahoot.questions[0]);
+    const quest = JSON.parse(JSON.stringify(base.kahoot.questions));
     quest.type = type ? type : "quiz";
     quest.question = question;
     let content = undefined;
@@ -392,6 +391,123 @@ class Creator{
         return question;
     }
   };
+  // images
+  upload(img){
+    const me = this;
+    return new Promise((creeper,awman)=>{
+      filetype.fromBuffer(img).then(type=>{
+        me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
+          encoding: null,
+          formData: {
+            f: {
+              value: Buffer.from(img),
+              options: {
+                filename: `image.${type.ext}`,
+                contentType: type.mime
+              }
+            }
+          }
+        },(e,r,b)=>{
+          if(e){
+            awman(e);
+          }
+          try{
+            creeper(JSON.parse(b.toString()));
+          }catch(e){
+            awman(b,e);
+          }
+        });
+      });
+    });
+  }
+  setQuizImage(buf){
+    const me = this;
+    return new Promise((asuna,kirito)=>{
+      if(typeof buf == "string"){
+        me.request.get(buf,{encoding: null},(e,r,b)=>{
+          if(e){
+            return kirito(b,e);
+          }
+          me.upload(b).then(info=>{
+            console.log(info);
+            me.quiz.cover = `https://media.kahoot.it/${info.id}`;
+            if(!me.quiz.coverMetadata){
+              me.quiz.coverMetadata = {};
+            }
+            Object.assign(me.quiz.coverMetadata,{
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            });
+            asuna(me);
+          }).catch(err=>{
+            kirito(err);
+          });
+        });
+      }else{
+        me.upload(Buffer.from(buf)).then(info=>{
+          me.quiz.cover = `https://media.kahoot.it/${info.id}`;
+          if(!me.quiz.coverMetadata){
+            me.quiz.coverMetadata = {};
+          }
+          Object.assign(me.quiz.coverMetadata,{
+            id: info.id,
+            contentType: info.contentType,
+            width: info.width,
+            height: info.height
+          });
+          asuna(me);
+        }).catch(err=>{
+          kirito(err);
+        });
+      }
+    });
+  }
+  setQuestionImage(question,buf){
+    const me = this;
+    return new Promise((misty,ash)=>{
+      if(typeof buf == "string"){
+        me.request.get(buf,{encoding:null},(e,r,b)=>{
+          if(e){
+            return ash(b,e);
+          }
+          me.upload(b).then(info=>{
+            question.image = `https://media.kahoot.it/${info.id}`;
+            if(!question.imageMetadata){
+              question.imageMetadata = {};
+            }
+            question.imageMetadata = {
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            };
+            misty(question);
+          }).catch(err=>{
+            ash(err);
+          });
+        });
+      }else{
+        me.upload(Buffer.from(buf)).then(info=>{
+          question.image = `https://media.kahoot.it/${info.id}`;
+          if(!question.imageMetadata){
+            question.imageMetadata = {};
+          }
+          question.imageMetadata = {
+            id: info.id,
+            contentType: info.contentType,
+            width: info.width,
+            height: info.height
+          };
+          misty(me);
+        }).catch(err=>{
+          ash(err);
+        });
+      }
+      return me;
+    });
+  }
   // metadata stuff
   setLobbyVideo(id,start,end){
     const me = this;
