@@ -321,7 +321,7 @@ class Creator{
   addQuestion(question,type,choices){
     const me = this;
     let cs = [];
-    const quest = JSON.parse(JSON.stringify(base.kahoot.questions));
+    const quest = JSON.parse(JSON.stringify(base.kahoot.questions[0]));
     quest.type = type ? type : "quiz";
     quest.question = question;
     let content = undefined;
