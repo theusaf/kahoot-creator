@@ -275,6 +275,7 @@ class Creator{
               return jessie(b,err);
             }
             me.kahoot.id = null;
+            me.needsToCreateDraft = true;
             return james(data);
           });
         }catch(err){
