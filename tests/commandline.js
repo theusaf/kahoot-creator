@@ -122,7 +122,7 @@ function main(){
               q.question("Is this choice correct (true|false)? ",bo=>{
                 q.question("What is the choice? ",ch=>{
                   try{
-                    console.log(b.addChoice(b.questions[n-1],ch,Boolean(bo)));
+                    console.log(b.addChoice(b.questions[n-1],ch,bo == "true"));
                   }catch(err){
                     console.log("An error ocurred");
                   }
@@ -135,7 +135,7 @@ function main(){
               q.question("Is this choice correct (true|false)? ",bo=>{
                 q.question("What is the URL of the image?",u=>{
                   try{
-                    b.addImageChoice(b.questions[n-1],u,Boolean(bo)).then(qu=>{
+                    b.addImageChoice(b.questions[n-1],u,bo == "true").then(qu=>{
                       console.log(qu);
                       main();
                     }).catch(()=>{
@@ -227,6 +227,7 @@ function main(){
           "update - save changes to draft",
           "publish - publish changes",
           "log - see contents of the kahoot",
+          "set - set contents of the kahoot",
           "question - add a new question",
           "removeQuestion - remove a question",
           "choice - add an answer",
