@@ -502,7 +502,6 @@ class Creator{
       switch (question.type) {
         case "jumble":
           if(question.choices.length >= 4){
-            return question;
           }else if(question.choices.length < 4){
             question.choices.push({
               answer:"",
@@ -518,15 +517,11 @@ class Creator{
               question.choices.push({answer:"",correct:true});
             }
             question.numberOfAnswers = 4;
-            return question;
           }
           break;
         case "content":
         case "word_cloud":
-          return question;
-          break;
         case "open_ended":
-          return question;
           break;
         default:
           if(question.choices.length >= 4){
@@ -543,8 +538,8 @@ class Creator{
             }
           });
           question.numberOfAnswers = question.choices.length;
-          return question;
       }
+      console.log("done!");
       yes(question);
     };
     return new Promise((no,yes)=>{
