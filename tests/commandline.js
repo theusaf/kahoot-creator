@@ -20,6 +20,15 @@ q.question("Enter Username: ",n=>{
 function main(){
   q.question("What would you like to do? ",a=>{
     switch (a) {
+      case "set":
+        return q.question("What to set? ",s=>{
+          q.question("What to set it to? ",v=>{
+            try{
+              eval(`b${s} = ${v}`);
+            }catch(e){}
+            main();
+          });
+        });
       case "log":
         return q.question("What to log? ",l=>{
           try{
