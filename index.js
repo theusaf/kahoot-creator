@@ -549,7 +549,7 @@ class Creator{
     };
     return new Promise((no,yes)=>{
       if(typeof choice == "string"){
-        this.request.get(buf,{encoding:null},(e,r,b)=>{
+        this.request.get(choice,{encoding:null},(e,r,b)=>{
           if(e){
             yes(e);
           }
@@ -560,7 +560,11 @@ class Creator{
           });
         });
       }else{
-
+        this.upload(choice).then(info=>{
+          summon(info,no,yes);
+        }).catch(err=>{
+          yes(err);
+        });
       }
     });
   }

@@ -138,8 +138,10 @@ function main(){
                     b.addImageChoice(b.questions[n-1],u,bo == "true").then(qu=>{
                       console.log(qu);
                       main();
-                    }).catch(()=>{
+                    }).catch(e=>{
+                      console.log(e);
                       console.log("There was an error uploading the image");
+                      main();
                     });
                   }catch(e){
                     console.log("There was an error");
