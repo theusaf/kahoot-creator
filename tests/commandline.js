@@ -85,11 +85,11 @@ function main(){
         break;
       case "question":
       case "addQuestion":
-        return q.question("Enter the question: ",q=>{
+        return q.question("Enter the question: ",qu=>{
           q.question("Enter the question type: ",t=>{
             q.question("Enter the choices: ",cs=>{
               try{
-                console.log(b.addQuestion(q,t,JSON.parse(cs)));
+                console.log(b.addQuestion(qu,t,JSON.parse(cs)));
                 main();
               }catch(err){
                 console.log("There was a syntax error in your choices.");
