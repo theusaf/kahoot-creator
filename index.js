@@ -430,7 +430,7 @@ class Creator{
               width: info.width,
               height: info.height
             });
-            asuna(me);
+            asuna(this);
           }).catch(err=>{
             kirito(err);
           });
@@ -447,7 +447,7 @@ class Creator{
             width: info.width,
             height: info.height
           });
-          asuna(me);
+          asuna(this);
         }).catch(err=>{
           kirito(err);
         });
@@ -489,7 +489,7 @@ class Creator{
             width: info.width,
             height: info.height
           };
-          misty(me);
+          misty(this);
         }).catch(err=>{
           ash(err);
         });
