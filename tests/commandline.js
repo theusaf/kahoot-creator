@@ -20,6 +20,13 @@ q.question("Enter Username: ",n=>{
 function main(){
   q.question("What would you like to do? ",a=>{
     switch (a) {
+      case "log":
+        return q.question("What to log? ",l=>{
+          try{
+            eval(`console.log(b${l})`);
+          }catch(e){}
+        });
+        break;
       case "load":
         return q.question("Please enter the id of the kahoot to load: ",id=>{
           b.load(id).then(()=>{
@@ -43,7 +50,8 @@ function main(){
         return b.publish().then(()=>{
           main();
         }).catch(e=>{
-          console.log("There was an error while publishing the kahoot: " + e);
+          console.log("There was an error while publishing the kahoot: " + JSON.stringify(e));
+          main();
         });
         break;
       case "create":
@@ -104,7 +112,7 @@ function main(){
               q.question("Is this choice correct (true|false)? ",bo=>{
                 q.question("What is the choice? ",ch=>{
                   try{
-                    console.log(b.addChoice(b.questions[n-1],ch,bo));
+                    console.log(b.addChoice(b.questions[n-1],ch,Boolean(bo)));
                   }catch(err){
                     console.log("An error ocurred");
                   }
@@ -117,7 +125,7 @@ function main(){
               q.question("Is this choice correct (true|false)? ",bo=>{
                 q.question("What is the URL of the image?",u=>{
                   try{
-                    b.addImageChoice(b.questions[n-1],u,bo).then(qu=>{
+                    b.addImageChoice(b.questions[n-1],u,Boolean(bo)).then(qu=>{
                       console.log(qu);
                       main();
                     }).catch(()=>{
@@ -135,7 +143,7 @@ function main(){
         break;
       case "lobby":
         return q.question("enter the id of the youtube video: ",v=>{
-          q.question("enter the start and end time for the video, split by comma: "t=>{
+          q.question("enter the start and end time for the video, split by comma: ",t=>{
             try{
               const s = Number(t.split(",")[0]);
               const e = Number(t.split(",")[1]);
@@ -150,7 +158,7 @@ function main(){
         break;
       case "questionVideo":
         return q.question("Enter the id of the youtube video: ",v=>{
-          q.question("Enter the start and end time for the video, split by comma: "t=>{
+          q.question("Enter the start and end time for the video, split by comma: ",t=>{
             try{
               const s = Number(t.split(",")[0]);
               const e = Number(t.split(",")[1]);
