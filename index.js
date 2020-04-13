@@ -95,12 +95,11 @@ class Creator{
   }
   // HTTP methods
   login(username,password){
-    const me = this;
     return new Promise((forty,two)=>{
-      me.request.post({
+      this.request.post({
         url: "https://create.kahoot.it/rest/authenticate",
         headers: {
-          "User-Agent": me.userAgent,
+          "User-Agent": this.userAgent,
           "x-kahoot-login-gate": "enabled"
         },
         json: true,
@@ -118,12 +117,12 @@ class Creator{
           if(resp.error){
             two(resp);
           }else{
-            me.user = resp;
-            me.request = me.request.defaults({
-              jar:me.jar,
+            this.user = resp;
+            this.request = this.request.defaults({
+              jar:this.jar,
               headers:{
-                "User-Agent": me.userAgent,
-                "authorization": "Bearer " + me.user.access_token
+                "User-Agent": this.userAgent,
+                "authorization": "Bearer " + this.user.access_token
               }
             });
             forty(resp);
@@ -135,9 +134,8 @@ class Creator{
     });
   }
   load(id){
-    const me = this;
     return new Promise((romeo,juliet)=>{
-      me.request.get(`https://create.kahoot.it/rest/drafts/${id}`,{json:true},(e,r,b)=>{
+      this.request.get(`https://create.kahoot.it/rest/drafts/${id}`,{json:true},(e,r,b)=>{
         if(e){
           return juliet(e);
         }
@@ -148,14 +146,14 @@ class Creator{
             delete j.type;
             delete j.created;
             delete j.modified;
-            Object.assign(me.kahoot,j);
-            me.needsToCreateDraft = false;
+            Object.assign(this.kahoot,j);
+            this.needsToCreateDraft = false;
             return romeo(j);
           }
         }catch(e){
           return juliet(e);
         }
-        me.request.get(`https://create.kahoot.it/rest/kahoots/${id}`,{json:true},(e,r,b)=>{
+        this.request.get(`https://create.kahoot.it/rest/kahoots/${id}`,{json:true},(e,r,b)=>{
           if(e){
             juliet(e);
           }
@@ -164,9 +162,9 @@ class Creator{
             if(k.error){
               return juliet(k);
             }
-            Object.assign(me.kahoot.kahoot,k);
-            me.needsToCreateDraft = true;
-            me.kahoot.kahootExists = true;
+            Object.assign(this.kahoot.kahoot,k);
+            this.needsToCreateDraft = true;
+            this.kahoot.kahootExists = true;
             romeo(k);
           }catch(e){
             juliet(b,e);
@@ -176,13 +174,12 @@ class Creator{
     });
   }
   create(name){
-    const me = this;
     return new Promise((toss,yeet)=>{
-      if(!me.user){
+      if(!this.user){
         return yeet({error:"not logged in!"});
       }
-      me.title = name ? name : "lorem ipsum";
-      me.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
+      this.title = name ? name : "lorem ipsum";
+      this.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:this.kahoot},(e,r,b)=>{
         if(e){
           yeet(e);
         }
@@ -191,7 +188,7 @@ class Creator{
           if(data.error){
             return yeet(data);
           }
-          Object.assign(me.kahoot,data);
+          Object.assign(this.kahoot,data);
           toss(data);
         }catch(err){
           yeet(b,e);
@@ -200,13 +197,12 @@ class Creator{
     });
   }
   update(){
-    const me = this;
     return new Promise((my,stick)=>{
-      if(!me.user){
+      if(!this.user){
         stick({error:"Not logged in!"});
       }
-      if(me.needsToCreateDraft){
-        me.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:me.kahoot},(e,r,b)=>{
+      if(this.needsToCreateDraft){
+        this.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:this.kahoot},(e,r,b)=>{
           if(e){
             stick(e);
           }
@@ -215,8 +211,8 @@ class Creator{
             if(data.error){
               return stick(data);
             }
-            Object.assign(me.kahoot,data);
-            me.needsToCreateDraft = false;
+            Object.assign(this.kahoot,data);
+            this.needsToCreateDraft = false;
             my(data);
           }catch(err){
             stick(b,e);
@@ -224,7 +220,7 @@ class Creator{
         });
         return;
       }
-      me.request.put(`https://create.kahoot.it/rest/drafts/${me.kahoot.kahoot.uuid}`,{body:me.kahoot,json:true},(e,r,b)=>{
+      this.request.put(`https://create.kahoot.it/rest/drafts/${this.kahoot.kahoot.uuid}`,{body:this.kahoot,json:true},(e,r,b)=>{
         if(e){
           console.log(e);
           stick(e);
@@ -235,7 +231,7 @@ class Creator{
           delete resp.type;
           delete resp.created;
           delete resp.modified;
-          Object.assign(me.kahoot,resp);
+          Object.assign(this.kahoot,resp);
           my(resp);
         }catch(e){
           console.log(b);
@@ -246,13 +242,12 @@ class Creator{
     });
   }
   publish(){
-    const me = this;
     return new Promise((james,jessie)=>{
-      if(!me.user){
+      if(!this.user){
         return jessie({error:"Not logged in!"});
       }
       // publish
-      me.request.post(`https://create.kahoot.it/rest/drafts/${me.kahoot.id}/publish`,{body:me.kahoot,json:true},(e,r,b)=>{
+      this.request.post(`https://create.kahoot.it/rest/drafts/${this.kahoot.id}/publish`,{body:this.kahoot,json:true},(e,r,b)=>{
         if(e){
           return jessie(e);
         }
@@ -261,9 +256,9 @@ class Creator{
           if(data.error){
             return jessie(data);
           }
-          Object.assign(me.kahoot.kahoot,data);
+          Object.assign(this.kahoot.kahoot,data);
           // delete lock file
-          me.request.delete(`https://create.kahoot.it/rest/kahoots/${me.kahoot.id}/lock`,{json:true},(e,r,b)=>{
+          this.request.delete(`https://create.kahoot.it/rest/kahoots/${this.kahoot.id}/lock`,{json:true},(e,r,b)=>{
             if(e){
               return jessie(e);
             }
@@ -274,8 +269,8 @@ class Creator{
             }catch(err){
               return jessie(b,err);
             }
-            me.kahoot.id = null;
-            me.needsToCreateDraft = true;
+            this.kahoot.id = null;
+            this.needsToCreateDraft = true;
             return james(data);
           });
         }catch(err){
@@ -286,23 +281,19 @@ class Creator{
   }
   // Getters and setters for easier access
   get id(){
-    const me = this;
-    return me.kahoot.kahoot.uuid;
+    return this.kahoot.kahoot.uuid;
   }
   get questions(){
-    const me = this;
-    return me.kahoot.kahoot.questions;
+    return this.kahoot.kahoot.questions;
   }
   get title(){
-    const me = this;
-    return me.kahoot.kahoot.title;
+    return this.kahoot.kahoot.title;
   }
   set title(title){
-    const me = this;
     let slug = title.replace(/[^0-9a-z\ ]/gmi,"");
     slug = slug.replace(/\ */gm,"-");
-    me.kahoot.kahoot.title = title;
-    me.kahoot.kahoot.slug = slug;
+    this.kahoot.kahoot.title = title;
+    this.kahoot.kahoot.slug = slug;
     return title;
   }
   get quiz(){
@@ -310,17 +301,14 @@ class Creator{
   }
   // Adding questions and modifying stuff
   removeQuestion(index){
-    const me = this;
-    me.kahoot.kahoot.questions.splice(index,1);
-    return me;
+    this.kahoot.kahoot.questions.splice(index,1);
+    return this;
   }
   shuffleQuestions(){
-    const me = this;
-    me.kahoot.kahoot.questions = shuffle(me.kahoot.kahoot.questions);
-    return me;
+    this.kahoot.kahoot.questions = shuffle(this.kahoot.kahoot.questions);
+    return this;
   }
   addQuestion(question,type,choices){
-    const me = this;
     let cs = [];
     const quest = JSON.parse(JSON.stringify(base.kahoot.questions[0]));
     quest.type = type ? type : "quiz";
@@ -357,8 +345,8 @@ class Creator{
     quest.choices = cs;
     quest.description = content;
     quest.numberOfAnswers = choices ? choices.length : undefined;
-    const ind = me.kahoot.kahoot.questions.push(quest) - 1;
-    return me.kahoot.kahoot.questions[ind];
+    const ind = this.kahoot.kahoot.questions.push(quest) - 1;
+    return this.kahoot.kahoot.questions[ind];
   }
   addChoice(question,choice,correct){
     switch (question.type) {
@@ -394,10 +382,9 @@ class Creator{
   };
   // images
   upload(img){
-    const me = this;
     return new Promise((creeper,awman)=>{
       filetype.fromBuffer(img).then(type=>{
-        me.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
+        this.request.post(`https://apis.kahoot.it/media-api/media/upload?_=${Date.now()}`,{
           encoding: null,
           formData: {
             f: {
@@ -422,20 +409,19 @@ class Creator{
     });
   }
   setQuizImage(buf){
-    const me = this;
     return new Promise((asuna,kirito)=>{
       if(typeof buf == "string"){
-        me.request.get(buf,{encoding: null},(e,r,b)=>{
+        this.request.get(buf,{encoding: null},(e,r,b)=>{
           if(e){
             return kirito(b,e);
           }
-          me.upload(b).then(info=>{
+          this.upload(b).then(info=>{
             console.log(info);
-            me.quiz.cover = `https://media.kahoot.it/${info.id}`;
-            if(!me.quiz.coverMetadata){
-              me.quiz.coverMetadata = {};
+            this.quiz.cover = `https://media.kahoot.it/${info.id}`;
+            if(!this.quiz.coverMetadata){
+              this.quiz.coverMetadata = {};
             }
-            Object.assign(me.quiz.coverMetadata,{
+            Object.assign(this.quiz.coverMetadata,{
               id: info.id,
               contentType: info.contentType,
               width: info.width,
@@ -447,12 +433,12 @@ class Creator{
           });
         });
       }else{
-        me.upload(Buffer.from(buf)).then(info=>{
-          me.quiz.cover = `https://media.kahoot.it/${info.id}`;
-          if(!me.quiz.coverMetadata){
-            me.quiz.coverMetadata = {};
+        this.upload(Buffer.from(buf)).then(info=>{
+          this.quiz.cover = `https://media.kahoot.it/${info.id}`;
+          if(!this.quiz.coverMetadata){
+            this.quiz.coverMetadata = {};
           }
-          Object.assign(me.quiz.coverMetadata,{
+          Object.assign(this.quiz.coverMetadata,{
             id: info.id,
             contentType: info.contentType,
             width: info.width,
@@ -466,14 +452,13 @@ class Creator{
     });
   }
   setQuestionImage(question,buf){
-    const me = this;
     return new Promise((misty,ash)=>{
       if(typeof buf == "string"){
-        me.request.get(buf,{encoding:null},(e,r,b)=>{
+        this.request.get(buf,{encoding:null},(e,r,b)=>{
           if(e){
             return ash(b,e);
           }
-          me.upload(b).then(info=>{
+          this.upload(b).then(info=>{
             question.image = `https://media.kahoot.it/${info.id}`;
             if(!question.imageMetadata){
               question.imageMetadata = {};
@@ -490,7 +475,7 @@ class Creator{
           });
         });
       }else{
-        me.upload(Buffer.from(buf)).then(info=>{
+        this.upload(Buffer.from(buf)).then(info=>{
           question.image = `https://media.kahoot.it/${info.id}`;
           if(!question.imageMetadata){
             question.imageMetadata = {};
@@ -506,23 +491,99 @@ class Creator{
           ash(err);
         });
       }
-      return me;
+      return this;
+    });
+  }
+  addImageChoice(question,choice,correct){
+    const summon = (info,yes,no)=>{
+      switch (question.type) {
+        case "jumble":
+          if(question.choices.length >= 4){
+            return question;
+          }else if(question.choices.length < 4){
+            question.choices.push({
+              answer:"",
+              correct:true,
+              image:{
+                id: info.id,
+                contentType: info.contentType,
+                width: info.width,
+                height: info.height
+              }
+            });
+            for(let i = 0;i<4-question.choices.length;++i){
+              question.choices.push({answer:"",correct:true});
+            }
+            question.numberOfAnswers = 4;
+            return question;
+          }
+          break;
+        case "content":
+        case "word_cloud":
+          return question;
+          break;
+        case "open_ended":
+          question.choices.push({
+            answer:"",
+            correct:correct,
+            image:{
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            }
+          });
+          question.numberOfAnswers = question.choices.length;
+          return question;
+          break;
+        default:
+          if(question.choices.length >= 4){
+            return question;
+          }
+          question.choices.push({
+            answer:"",
+            correct:correct,
+            image:{
+              id: info.id,
+              contentType: info.contentType,
+              width: info.width,
+              height: info.height
+            }
+          });
+          question.numberOfAnswers = question.choices.length;
+          return question;
+      }
+      yes(question);
+    };
+    return new Promise((no,yes)=>{
+      if(typeof choice == "string"){
+        this.request.get(buf,{encoding:null},(e,r,b)=>{
+          if(e){
+            yes(e);
+          }
+          this.upload(b).then(info=>{
+            summon(info,no,yes);
+          }).catch(err=>{
+            yes(err);
+          });
+        });
+      }else{
+
+      }
     });
   }
   // metadata stuff
   setLobbyVideo(id,start,end){
-    const me = this;
-    Object.assign(me.quiz.lobby_video.youtube,{
+    Object.assign(this.quiz.lobby_video.youtube,{
       id: id,
       startTime: start,
       endTime: end,
       service: "youtube",
       fullUrl: `https://www.youtube.com/watch?v=${id}`
     });
-    return me;
+    return this;
   }
   setQuestionVideo(question,id,start,end){
-    const me = this;
     Object.assign(question.video,{
       id: id,
       startTime: start,
