@@ -367,6 +367,9 @@ class Creator{
         return question;
         break;
       case "open_ended":
+        if(choice.length > 20){
+          console.warn("Warning: This choice is too long, meaning that normal kahoot players won't be able to answer this quesiton.");
+        }
         question.choices.push({answer:choice,correct:correct});
         question.numberOfAnswers = question.choices.length;
         return question;
@@ -523,17 +526,6 @@ class Creator{
           return question;
           break;
         case "open_ended":
-          question.choices.push({
-            answer:"",
-            correct:correct,
-            image:{
-              id: info.id,
-              contentType: info.contentType,
-              width: info.width,
-              height: info.height
-            }
-          });
-          question.numberOfAnswers = question.choices.length;
           return question;
           break;
         default:

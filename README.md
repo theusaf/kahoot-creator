@@ -49,6 +49,10 @@ creator.login("username","password").then(()=>{
   - `choice`: The choice being added
   - `correct`: Whether the choice is correct
   - returns: `question` (the question that the choice was added to)
+- addImageChoice(question,choice,correct)
+  - see addChoice.
+  - `choice`: The image URL / Buffer to use.
+  - returns a `Promise`
 - setLobbyVideo(id,start,end)
   - `id`: The id of the YouTube video
   - `start`: The start time in seconds
@@ -57,6 +61,11 @@ creator.login("username","password").then(()=>{
   - `id`: The id of the YouTube video
   - `start`: The start time in seconds
   - `end`: The end time in seconds
+- setQuestionImage(question,buf)
+  - `question`: The question to add the image to.
+  - `buf`: The image buffer or URL of the question image.
+- setQuizImage(buf)
+  - `buf`: The image buffer or URL of the quiz image.
 
 ### Properties
 - `id`: The uuid of the current kahoot quiz
