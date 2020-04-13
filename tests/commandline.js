@@ -25,6 +25,7 @@ function main(){
           try{
             eval(`console.log(b${l})`);
           }catch(e){}
+          main();
         });
         break;
       case "load":
