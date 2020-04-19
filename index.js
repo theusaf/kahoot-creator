@@ -178,6 +178,7 @@ class Creator{
       if(!this.user){
         return yeet({error:"not logged in!"});
       }
+      Object.assign(this.kahoot,base);
       this.title = name ? name : "lorem ipsum";
       this.request.post("https://create.kahoot.it/rest/drafts",{json:true,body:this.kahoot},(e,r,b)=>{
         if(e){
